@@ -19,3 +19,4 @@ Route::get('/', function (CategoryService $sv) {
     return $sv->get();
     return view('welcome');
 });
+
