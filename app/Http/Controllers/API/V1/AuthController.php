@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Route;
@@ -15,20 +16,35 @@ class AuthController
         $baseUrl = "/oauth/token";
         return $baseUrl;
     }
-    public function token()
+    public function token(Request $request)
     {
+        $responseResult = [
+            'message' => 'Fail'
+        ];
         request()->request->add([
             'grant_type'    => 'password',
             'client_id'     => env('OAUTH_PASSWORD_GRANT_CLIENT_ID'),
             'client_secret' => env('OAUTH_PASSWORD_GRANT_CLIENT_SECRET'),
-            'username' => request()->username,
+            'username' => request()->email,
             'password' => request()->password,
             'scope'         => '*'
         ]);
+        
         $oauth2 = Request::create('/oauth/token', 'post');
         $response = Route::dispatch($oauth2);
+
         $res = json_decode($response->getContent(), true);
-        return response(Arr::only($res, ['token_type', 'expires_in', 'access_token', 'refresh_token']));
+        if ($response->status() !== 200) {
+            return response($responseResult, 400);
+        }
+        $responseResult['message'] = 'Success';
+        $responseResult['token_type'] = $res['token_type'];
+        $responseResult['access_token'] = $res['access_token'];
+        $responseResult['expires_in'] = $res['expires_in'];
+        $responseResult['refresh_token'] = $res['refresh_token'];
+        $responseResult['user'] = User::where('email',request()->username)->first();
+        return response($responseResult, 200);
+
         // $response = Http::asForm()->post($this->getTokenUrl(), [
         //     'grant_type' => 'password',
         //     'client_id'     => env('OAUTH_PASSWORD_GRANT_CLIENT_ID'),
@@ -41,6 +57,9 @@ class AuthController
     }
     public function refreshToken()
     {
+        $responseResult = [
+            'message' => 'Fail'
+        ];
         request()->request->add([
             'grant_type'    => 'refresh_token',
             'client_id'     => env('OAUTH_PASSWORD_GRANT_CLIENT_ID'),
@@ -51,6 +70,9 @@ class AuthController
         $oauth2 = Request::create('/oauth/token', 'post');
         $response = Route::dispatch($oauth2);
         $res = json_decode($response->getContent(), true);
+        if ($response->status() !== 200) {
+            return response($responseResult, 400);
+        }
         return response(Arr::only($res, ['token_type', 'expires_in', 'access_token', 'refresh_token']));
 
         // $response = Http::asForm()->post($this->getTokenUrl(), [
