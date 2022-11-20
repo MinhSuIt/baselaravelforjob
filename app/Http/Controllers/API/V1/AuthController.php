@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Route;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\Console\Input\Input;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
 {
@@ -29,7 +31,7 @@ class AuthController
             'password' => request()->password,
             'scope'         => '*'
         ]);
-        
+
         $oauth2 = Request::create('/oauth/token', 'post');
         $response = Route::dispatch($oauth2);
 
@@ -85,8 +87,30 @@ class AuthController
         // ]);
         // return $response->json();
     }
-    public function register()
+    public function register(Request $request)
     {
-        return "register";
+        info($request->only('name', 'email', 'password', 'avatar','avatarName'));
+        info($request->all());
+        $data = $request->validate([
+            // 'avatar'   => ['image'],
+            'name'     => ['required', 'string'],
+            'email'    => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+        try {
+
+            $user = User::create($data);
+        } catch (\Throwable $th) {
+            info($th->getMessage());
+            return response(['message' => 'Fail'], Response::HTTP_BAD_REQUEST);
+        }
+        if ($request->hasFile('avatar')) {
+            info('aaaaaaaaaaaaa');
+            $user
+                ->addMedia($request->file('avatar'))
+                ->toMediaCollection('avatar');
+        }
+
+        return response($user->load('media'), Response::HTTP_CREATED);
     }
 }
