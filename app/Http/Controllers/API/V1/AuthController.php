@@ -103,16 +103,11 @@ class AuthController
             return response(['message' => 'Fail'], Response::HTTP_BAD_REQUEST);
         }
         if ($request->hasFile('avatar')) {
+            // user chỉ có 1 ảnh đại diện > User.registerMediaCollections
+            // tiện cho create và update chỉ cần 1 đoạn mã giống nhau
             $user
                 ->addMedia($request->file('avatar'))
                 ->toMediaCollection('avatar');
-            // in your model
-            // public function registerMediaCollections(): void
-            // {
-            //     $this
-            //         ->addMediaCollection('avatar')
-            //         ->singleFile();
-            // }
         }
 
         return response($user->load('media'), Response::HTTP_CREATED);
