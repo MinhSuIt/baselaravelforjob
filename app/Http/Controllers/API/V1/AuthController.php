@@ -44,7 +44,7 @@ class AuthController
         $responseResult['access_token'] = $res['access_token'];
         $responseResult['expires_in'] = $res['expires_in'];
         $responseResult['refresh_token'] = $res['refresh_token'];
-        $responseResult['user'] = User::where('email',request()->username)->first();
+        $responseResult['user'] = User::where('email', request()->username)->first();
         return response($responseResult, 200);
 
         // $response = Http::asForm()->post($this->getTokenUrl(), [
@@ -106,6 +106,13 @@ class AuthController
             $user
                 ->addMedia($request->file('avatar'))
                 ->toMediaCollection('avatar');
+            // in your model
+            // public function registerMediaCollections(): void
+            // {
+            //     $this
+            //         ->addMediaCollection('avatar')
+            //         ->singleFile();
+            // }
         }
 
         return response($user->load('media'), Response::HTTP_CREATED);
