@@ -89,10 +89,8 @@ class AuthController
     }
     public function register(Request $request)
     {
-        info($request->only('name', 'email', 'password', 'avatar','avatarName'));
-        info($request->all());
         $data = $request->validate([
-            // 'avatar'   => ['image'],
+            'avatar'   => ['image'],
             'name'     => ['required', 'string'],
             'email'    => ['required', 'email'],
             'password' => ['required'],
@@ -105,7 +103,6 @@ class AuthController
             return response(['message' => 'Fail'], Response::HTTP_BAD_REQUEST);
         }
         if ($request->hasFile('avatar')) {
-            info('aaaaaaaaaaaaa');
             $user
                 ->addMedia($request->file('avatar'))
                 ->toMediaCollection('avatar');
